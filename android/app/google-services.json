@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "409680446243",
+    "project_id": "vibe-c2a30",
+    "storage_bucket": "vibe-c2a30.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409680446243:android:9d82ed0013e1edf56a0296",
+        "android_client_info": {
+          "package_name": "com.vibe.advisor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzWoYFpRxHH2FmAFhqNhjr6D3s5izC0ek"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409680446243:android:0328fc64f6045b066a0296",
+        "android_client_info": {
+          "package_name": "com.vibe.match"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzWoYFpRxHH2FmAFhqNhjr6D3s5izC0ek"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
