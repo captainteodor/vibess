@@ -1,0 +1,36 @@
+---
+model: vertexai/gemini-1.5-flash
+config:
+  temperature: 0.7
+input:
+  schema:
+    firstName: string
+    age: number
+    sex: string
+    goal: string
+    archetypes: string
+    style: string
+output:
+  format: json
+  schema:
+    response: string
+    archetypes(array): string
+---
+
+{{ role "system" }}
+{{>defaultStyle style=style}}
+
+Based on their relationship goal of "{{goal}}", age {{age}}, and the provided archetype list:
+{{archetypes}}
+
+Suggest the most appropriate archetypes, with a brief description of each.
+
+**Important Instructions**:
+1. Choose the top 7 most suitable archetypes, while the last one will be "Load More Archetypes" so the user can fetch the rest.
+2. Debate the archetypes selection in details, be sarcastic and creative here heres an example: "/* say a funny introduction */, /* list suggested archetype and debate them considering the context */ "
+3. Adjust the tone to be **playfully sarcastic**. Avoid any overly harsh language.
+4. Output ONLY a JSON object in this format:
+{
+  "response": "Brief overview of suggestions",
+  "archetypes": ["Archetype 1", "Archetype 2", "Archetype 3","Load More Archetypes"]
+}

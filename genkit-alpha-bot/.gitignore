@@ -1,0 +1,12 @@
+lib
+# Ignore environment variables
+.env
+
+# Ignore Firebase credentials
+photofeeler-b47c8-01149ee907b9.json
+
+# Ignore node_modules folder
+node_modules/
+
+# Ignore log files
+*.log
