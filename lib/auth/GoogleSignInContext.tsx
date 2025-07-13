@@ -1,22 +1,28 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
-  GoogleSignin,
-  statusCodes,
-  GetTokensResponse,
-} from '@react-native-google-signin/google-signin';
-import { Platform, Alert } from 'react-native';
-import { getFirebaseAuth, getFirebaseFirestore } from '../../config/firebase';
-import {
+  User as FirebaseUser,
   GoogleAuthProvider,
   signInWithCredential,
-  User as FirebaseUser,
+  signInWithPopup,
 } from 'firebase/auth';
 import {
   doc,
   getDoc,
-  setDoc,
   serverTimestamp,
-} from 'firebase/firestore';  // Import Firestore methods
+  setDoc,
+} from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert, Platform } from 'react-native';
+import { getFirebaseAuth, getFirebaseFirestore } from '../../config/firebase';
+
+// Only import native Google Sign-In for non-web platforms
+let GoogleSignin: any;
+let statusCodes: any;
+
+if (Platform.OS !== 'web') {
+  const nativeGoogleSignIn = require('@react-native-google-signin/google-signin');
+  GoogleSignin = nativeGoogleSignIn.GoogleSignin;
+  statusCodes = nativeGoogleSignIn.statusCodes;
+}
 
 interface AdditionalUserData {
   sex: string;
@@ -41,13 +47,15 @@ export const GoogleSignInProvider = ({ children }: { children: React.ReactNode }
   const auth = getFirebaseAuth();
 
   useEffect(() => {
-    // Correctly configure Google Sign-In using environment variables
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB, // Use the env variable
-      offlineAccess: true, // for getting tokens
-      scopes: ['profile', 'email'], // to request user's profile and email
-      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS, // for iOS
-    });
+    // Configure Google Sign-In only for native platforms
+    if (Platform.OS !== 'web' && GoogleSignin) {
+      GoogleSignin.configure({
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB,
+        offlineAccess: true,
+        scopes: ['profile', 'email'],
+        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS,
+      });
+    }
 
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
@@ -79,120 +87,144 @@ export const GoogleSignInProvider = ({ children }: { children: React.ReactNode }
     }
     const firestore = getFirebaseFirestore();
     const userDocRef = doc(firestore, 'users', user.email!);
-  
-    try {
-      console.log('Saving user info to Firestore:', additionalData); // Log details being saved
-  
-      // Save the additional user info in Firestore
-      await setDoc(userDocRef, {
-        sex: additionalData.sex,
-        age: additionalData.age,
-        lastLogin: serverTimestamp(),
-      }, { merge: true });
-  
-      // Log success
-      console.log('User info successfully saved to Firestore');
-      
-      // Update local user info state
-      setUserInfo(additionalData);
-  
-    } catch (error) {
-      console.error('Error saving user info to Firestore:', error);
-      throw error;
-    }
-  };  
-
+    
+    // Save user info to Firestore
+    await setDoc(userDocRef, {
+      ...additionalData,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      uid: user.uid,
+      lastUpdated: serverTimestamp(),
+    }, { merge: true });
+    
+    setUserInfo(additionalData);
+  };
 
   const signIn = async () => {
     setLoading(true);
     try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const userInfo = await GoogleSignin.signIn();
-  
-      const tokens: GetTokensResponse = await GoogleSignin.getTokens();
-      const { idToken, accessToken } = tokens;
-  
-      if (!idToken) {
-        throw new Error('Google Sign-In failed: No ID token returned');
-      }
-  
-      const googleCredential = GoogleAuthProvider.credential(idToken, accessToken);
-      const userCredential = await signInWithCredential(auth, googleCredential);
-      const user = userCredential.user;
-  
-      setUser(user);
-  
-      // Firestore instance and user doc setup
-      const firestore = getFirebaseFirestore();
-      const userDocRef = doc(firestore, 'users', user.email!);
-  
-      // Extract first and last names from displayName
-      const displayName = user.displayName || '';
-      let firstName = '';
-      let lastName = '';
-  
-      if (displayName) {
-        const nameParts = displayName.split(' ');
-        firstName = nameParts[0];
-        lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''; // Handle middle names too
-      }
-  
-      // Set user info to Firestore (including firstName and lastName)
-      const userDocSnapshot = await getDoc(userDocRef);
-  
-      if (userDocSnapshot.exists()) {
-        // If the user already exists, fetch existing additional data
-        const userData = userDocSnapshot.data() as AdditionalUserData;
-        setUserInfo(userData);
-      } else {
-        // If the user is new, save first name and last name
-        const newUserInfo: AdditionalUserData & { firstName: string; lastName: string } = {
-          firstName,
-          lastName,
-          sex: '', // Placeholder
-          age: 0, // Placeholder
-        };
-  
-        await setDoc(userDocRef, {
-          firstName: newUserInfo.firstName,
-          lastName: newUserInfo.lastName,
-          sex: newUserInfo.sex,
-          age: newUserInfo.age,
-          createdAt: serverTimestamp(),
-          lastLogin: serverTimestamp(),
+      if (Platform.OS === 'web') {
+        // Web implementation using Firebase Auth
+        const provider = new GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        provider.setCustomParameters({
+          prompt: 'select_account'
         });
-  
-        setUserInfo(newUserInfo);
+
+        const result = await signInWithPopup(auth, provider);
+        
+        // Check if user exists in Firestore
+        const firestore = getFirebaseFirestore();
+        const userDocRef = doc(firestore, 'users', result.user.email!);
+        const userDocSnapshot = await getDoc(userDocRef);
+        
+        if (!userDocSnapshot.exists()) {
+          // Create user document if it doesn't exist
+          await setDoc(userDocRef, {
+            email: result.user.email,
+            displayName: result.user.displayName,
+            photoURL: result.user.photoURL,
+            uid: result.user.uid,
+            createdAt: serverTimestamp(),
+            lastSignIn: serverTimestamp(),
+          });
+        } else {
+          // Update last sign in
+          await setDoc(userDocRef, {
+            lastSignIn: serverTimestamp(),
+          }, { merge: true });
+        }
+        
+        console.log('Web Google Sign-In successful');
+      } else {
+        // Native implementation
+        if (!GoogleSignin) {
+          throw new Error('Google Sign-In not available on this platform');
+        }
+
+        await GoogleSignin.hasPlayServices();
+        const userInfo = await GoogleSignin.signIn();
+        const tokens = await GoogleSignin.getTokens();
+        
+        // Create Firebase credential
+        const googleCredential = GoogleAuthProvider.credential(
+          tokens.idToken,
+          tokens.accessToken
+        );
+        
+        // Sign in to Firebase
+        const userCredential = await signInWithCredential(auth, googleCredential);
+        
+        // Save/update user in Firestore
+        const firestore = getFirebaseFirestore();
+        const userDocRef = doc(firestore, 'users', userCredential.user.email!);
+        const userDocSnapshot = await getDoc(userDocRef);
+        
+        if (!userDocSnapshot.exists()) {
+          await setDoc(userDocRef, {
+            email: userCredential.user.email,
+            displayName: userCredential.user.displayName,
+            photoURL: userCredential.user.photoURL,
+            uid: userCredential.user.uid,
+            createdAt: serverTimestamp(),
+            lastSignIn: serverTimestamp(),
+          });
+        } else {
+          await setDoc(userDocRef, {
+            lastSignIn: serverTimestamp(),
+          }, { merge: true });
+        }
+        
+        console.log('Native Google Sign-In successful');
       }
     } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled the login flow.');
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('Sign-in is in progress already.');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Error', 'Google Play Services not available or outdated.');
-      } else {
-        console.error('Google Sign-In Error:', error);
-        Alert.alert('Error', 'An error occurred during Google Sign-In.');
+      console.error('Google Sign-In Error:', error);
+      
+      if (Platform.OS === 'web') {
+        // Handle web-specific errors
+        if (error.code === 'auth/popup-closed-by-user') {
+          console.log('User closed the popup window');
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          console.log('Popup request was cancelled');
+        } else {
+          Alert.alert('Error', 'An error occurred during Google Sign-In.');
+        }
+      } else if (error.code) {
+        // Handle native-specific errors
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          console.log('User cancelled the login flow.');
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          console.log('Sign-in is in progress already.');
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          Alert.alert('Error', 'Google Play Services not available or outdated.');
+        } else {
+          Alert.alert('Error', 'An error occurred during Google Sign-In.');
+        }
       }
     } finally {
       setLoading(false);
     }
   };
-  
 
   const signOut = async () => {
     setLoading(true);
     try {
       await auth.signOut();
-      await GoogleSignin.signOut();
+      
+      // Sign out from Google on native platforms
+      if (Platform.OS !== 'web' && GoogleSignin) {
+        await GoogleSignin.signOut();
+      }
+      
       setUser(null);
       setUserInfo(null);
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
       setLoading(false);
-    };
+    }
   };
 
   return (

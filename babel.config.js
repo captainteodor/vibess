@@ -23,6 +23,7 @@ module.exports = function (api) {
           '.json',
         ],
       }],
+      'react-native-reanimated/plugin', // This plugin must be listed last.
     ],
   };
 };

@@ -12,7 +12,20 @@
           "package_name": "com.vibe.advisor"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "409680446243-4tn9mdv1hd2u6ahkrou92j0irve3u18c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vibe.advisor",
+            "certificate_hash": "e6cae99a3671dc516cebb9b195b835a246be1907"
+          }
+        },
+        {
+          "client_id": "409680446243-mnlg5q6jl8kmgk5rcqh7oabvv3t5j2mu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDzWoYFpRxHH2FmAFhqNhjr6D3s5izC0ek"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409680446243-mnlg5q6jl8kmgk5rcqh7oabvv3t5j2mu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "409680446243-edii24276nh9sfjrk6q0p68cttjmgbac.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anonymous.swiftiesandroids"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +56,12 @@
           "package_name": "com.vibe.match"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "409680446243-mnlg5q6jl8kmgk5rcqh7oabvv3t5j2mu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDzWoYFpRxHH2FmAFhqNhjr6D3s5izC0ek"
@@ -39,7 +69,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409680446243-mnlg5q6jl8kmgk5rcqh7oabvv3t5j2mu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "409680446243-edii24276nh9sfjrk6q0p68cttjmgbac.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anonymous.swiftiesandroids"
+              }
+            }
+          ]
         }
       }
     }
