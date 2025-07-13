@@ -1,34 +1,89 @@
 // app/(tabs)/_layout.tsx
-import React, { useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { TabBarIcon } from '../../components/TabBarIcon';
 import '../../global.css';
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
-      {/* Hidden index route - only one property needed */}
+    <Tabs 
+      screenOptions={{ 
+        headerShown: false,
+        tabBarActiveTintColor: '#6366F1',
+        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarStyle: {
+          backgroundColor: 'white',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB',
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        }
+      }}
+      initialRouteName="vote"
+    >
+      {/* Hidden index route */}
       <Tabs.Screen
         name="index"
         options={{
-          // Using only href: null is sufficient to hide from navigation
           href: null,
         }}
       />
       
-      {/* Main navigation tabs */}
+      {/* Vote Tab - Main screen */}
       <Tabs.Screen
-        name="dashboard"
+        name="vote"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          title: 'Vote',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? 'heart' : 'heart-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
+      
+      {/* Matches Tab */}
+      <Tabs.Screen
+        name="matches"
+        options={{
+          title: 'Matches',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? 'people' : 'people-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      
+      {/* Profile Tab */}
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? 'person' : 'person-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      
+      {/* Optional: Dashboard Tab - if you want to keep it */}
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          // Hide dashboard from tab bar but keep it accessible
+          href: null,
         }}
       />
     </Tabs>
