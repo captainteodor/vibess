@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  Image,
-  RefreshControl,
-  Alert,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  Modal
+    ActivityIndicator,
+    Alert,
+    Image,
+    Modal,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { useAuth } from '~/lib/auth/authContext';
-import { PhotoService } from '~/lib/services/PhotoService';
 import { getFirebaseFirestore } from '~/config/firebase';
+import { useAuth } from '~/lib/auth/authContext';
 import { PhotoModel } from '~/lib/models/PhotoModel';
+import { PhotoService } from '~/lib/services/PhotoService';
 import NewTestModal from '../../components/NewTestModal';
 
 const Dashboard: React.FC = () => {

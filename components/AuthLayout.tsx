@@ -1,10 +1,10 @@
 // /components/AuthLayout.tsx
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
 import { Stack } from 'expo-router';
-import { useAuth } from '../lib/auth/authContext';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 import SignInScreen from '../app/sign-in';
+import { useAuth } from '../lib/auth/authContext';
 
 const AuthLayout = () => {
   const { user, loading } = useAuth(); // Auth state from context
